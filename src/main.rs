@@ -96,7 +96,7 @@ async fn main() {
                                     ))
                                     .await
                                     .unwrap();
-                            } else if msg_body.starts_with("!rmine_issues") {
+                            } else if msg_body.starts_with("!issues") {
                                 let redmine_client = api::redmine::get_client(&config.redmine_token);
                                 let issues = api::redmine::get_all_issues(
                                     &redmine_client,
