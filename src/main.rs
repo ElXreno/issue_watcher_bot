@@ -14,7 +14,7 @@ use ruma::{
 use ruma_client::Client;
 use std::process::exit;
 use std::time::Duration;
-use tokio::stream::StreamExt;
+use tokio_stream::StreamExt;
 
 mod api;
 mod config;

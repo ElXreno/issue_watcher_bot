@@ -19,13 +19,14 @@ panic = "abort"
 codegen-units = 1
 
 [dependencies]
-assign = "1.1.0"
-rand = "0.8.0"
-reqwest = { version = "0.10.10", features = ["json"] }
-http = "0.2.2"
+assign = "1.1.1"
+rand = "0.8.1"
+reqwest = { version = "0.11.0", features = ["json"] }
+http = "0.2.3"
 directories = "3.0.1"
-serde = { version = "1.0.118", features = ["derive"] }
-serde_yaml = "0.8.14"
-tokio = { version = "0.2.24", features = ["full"] }
-ruma = { git = "https://github.com/ruma/ruma", rev = "19ae6ff", features = ["client-api", "unstable-pre-spec"] }
-ruma-client = { git = "https://github.com/ruma/ruma", rev = "19ae6ff" }
+serde = { version = "1.0.119", features = ["derive"] }
+serde_yaml = "0.8.15"
+tokio = { version = "1.0.1", features = ["full"] }
+tokio-stream = "0.1.2"
+ruma = { git = "https://github.com/ruma/ruma", rev = "f5a0add", features = ["client-api", "unstable-pre-spec"] }
+ruma-client = { git = "https://github.com/ruma/ruma", rev = "f5a0add" }
