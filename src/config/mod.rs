@@ -3,11 +3,11 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 use directories::ProjectDirs;
+use ruma_client::Session;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::io::Write;
 use std::path::{Path, PathBuf};
-use ruma_client::Session;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct Config {

@@ -48,6 +48,9 @@ async fn main() {
 
     println!("Authorization complete!");
 
+    let redmine_client =
+        api::redmine::get_client(&config.redmine_token, &config.redmine_server).await;
+
     let filter = FilterDefinition::ignore_all().into();
     let initial_sync_response = client
         .request(assign!(sync_events::Request::new(), {
@@ -97,7 +100,6 @@ async fn main() {
                                     .await
                                     .unwrap();
                             } else if msg_body.starts_with("!issues") {
-                                let redmine_client = api::redmine::get_client(&config.redmine_token);
                                 let issues = api::redmine::get_all_issues(
                                     &redmine_client,
                                     &config.redmine_server,

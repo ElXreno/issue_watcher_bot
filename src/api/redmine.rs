@@ -3,10 +3,10 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 use crate::structs::redmine::{Issue, Issues};
-use http::{HeaderMap, HeaderValue};
+use http::{HeaderMap, HeaderValue, StatusCode};
 use reqwest::Client;
 
-pub fn get_client(api_key: &Option<String>) -> Client {
+pub async fn get_client(api_key: &Option<String>, base_url: &str) -> Client {
     let mut default_headers = HeaderMap::new();
     if let Some(api_key) = api_key {
         default_headers.insert(
@@ -15,10 +15,28 @@ pub fn get_client(api_key: &Option<String>) -> Client {
         );
     }
 
-    Client::builder()
+    let client = Client::builder()
         .default_headers(default_headers)
         .build()
+        .unwrap();
+
+    println!("Redmine: Checking API key...");
+    let client = if client
+        .get(&format!("{}/my/account.json", base_url))
+        .send()
+        .await
         .unwrap()
+        .status()
+        != StatusCode::OK
+    {
+        println!("Redmine: WARNING: API key is not valid! Working without API key.");
+        Client::builder().build().unwrap()
+    } else {
+        println!("Redmine: API key is valid!");
+        client
+    };
+
+    client
 }
 
 pub async fn get_issue(issue_id: u32, client: &Client, base_url: &str) -> reqwest::Result<Issue> {
