@@ -11,8 +11,6 @@ use ruma::{
     },
     presence::PresenceState,
 };
-use ruma_client::Client;
-use std::process::exit;
 use std::time::Duration;
 use tokio_stream::StreamExt;
 
@@ -24,42 +22,29 @@ mod structs;
 async fn main() {
     let mut config = config::Config::load();
 
-    let home_server_url = config.matrix_server.parse().unwrap();
-    let client = Client::new(home_server_url, config.matrix_session);
-
-    let session = match client
-        .log_in(
-            &config.matrix_login,
-            &config.matrix_password,
-            None,
-            Some("Issue watcher client"),
-        )
-        .await
-    {
-        Ok(s) => s,
-        Err(e) => {
-            println!("Error on authorization phase! {}", e);
-            exit(1);
-        }
-    };
+    let (matrix_client, session) = api::matrix::get_client_with_session(
+        &config.matrix_server,
+        config.matrix_session,
+        &config.matrix_login,
+        &config.matrix_password,
+    )
+    .await;
 
     config.matrix_session = Some(session);
     config.save_to_file_warn();
-
-    println!("Authorization complete!");
 
     let redmine_client =
         api::redmine::get_client(&config.redmine_token, &config.redmine_server).await;
 
     let filter = FilterDefinition::ignore_all().into();
-    let initial_sync_response = client
+    let initial_sync_response = matrix_client
         .request(assign!(sync_events::Request::new(), {
             filter: Some(&filter),
         }))
         .await
         .unwrap();
 
-    let mut sync_stream = Box::pin(client.sync(
+    let mut sync_stream = Box::pin(matrix_client.sync(
         None,
         initial_sync_response.next_batch,
         &PresenceState::Online,
@@ -89,7 +74,7 @@ async fn main() {
                     match msg_body.chars().next() {
                         Some('!') => {
                             if msg_body.starts_with("!ping") {
-                                client
+                                matrix_client
                                     .request(send_message_event::Request::new(
                                         &room_id,
                                         &rand::random::<i32>().to_string(),
@@ -107,7 +92,7 @@ async fn main() {
                                 .await;
                                 if let Ok(issues) = issues {
                                     if issues.issues.len() == 0 {
-                                        client
+                                        matrix_client
                                             .request(send_message_event::Request::new(
                                                 &room_id,
                                                 &rand::random::<i32>().to_string(),
@@ -121,7 +106,7 @@ async fn main() {
                                             .unwrap();
                                     } else {
                                         let msg = issues.as_message(&config.redmine_server);
-                                        client
+                                        matrix_client
                                             .request(send_message_event::Request::new(
                                                 &room_id,
                                                 &rand::random::<i32>().to_string(),
@@ -136,7 +121,7 @@ async fn main() {
                                     let msg = format!(
                                         "Failed to fetch issues from redmine!<br>Error:<br><pre><code class=\"language-rust\">{:#?}</code></pre>", &issues.err()
                                     );
-                                    client
+                                    matrix_client
                                         .request(send_message_event::Request::new(
                                             &room_id,
                                             &rand::random::<i32>().to_string(),
@@ -148,7 +133,7 @@ async fn main() {
                                         .unwrap();
                                 }
                             } else {
-                                client
+                                matrix_client
                                     .request(send_message_event::Request::new(
                                         &room_id,
                                         &rand::random::<i32>().to_string(),
