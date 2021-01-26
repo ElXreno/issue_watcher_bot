@@ -25,7 +25,7 @@ pub struct Issue {
     pub status: Base,
     pub priority: Base,
     pub author: Base,
-    pub assigned_to: Base,
+    pub assigned_to: Option<Base>,
     pub subject: String,
     pub description: String,
     pub start_date: String, // TODO: Convert to date
