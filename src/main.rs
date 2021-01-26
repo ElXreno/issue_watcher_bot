@@ -4,10 +4,10 @@
 
 use assign::assign;
 use ruma::{
-    api::client::r0::{filter::FilterDefinition, message::send_message_event, sync::sync_events},
+    api::client::r0::{filter::FilterDefinition, sync::sync_events},
     events::{
         room::message::{MessageEventContent, TextMessageEventContent},
-        AnyMessageEventContent, AnySyncMessageEvent, AnySyncRoomEvent, SyncMessageEvent,
+        AnySyncMessageEvent, AnySyncRoomEvent, SyncMessageEvent,
     },
     presence::PresenceState,
 };
@@ -74,16 +74,8 @@ async fn main() {
                     match msg_body.chars().next() {
                         Some('!') => {
                             if msg_body.starts_with("!ping") {
-                                matrix_client
-                                    .request(send_message_event::Request::new(
-                                        &room_id,
-                                        &rand::random::<i32>().to_string(),
-                                        &AnyMessageEventContent::RoomMessage(
-                                            MessageEventContent::text_plain("Pong!"),
-                                        ),
-                                    ))
-                                    .await
-                                    .unwrap();
+                                api::matrix::send_plain_message(&matrix_client, &room_id, "Pong!")
+                                    .await;
                             } else if msg_body.starts_with("!issues") {
                                 let issues = api::redmine::get_all_issues(
                                     &redmine_client,
@@ -92,59 +84,41 @@ async fn main() {
                                 .await;
                                 if let Ok(issues) = issues {
                                     if issues.issues.len() == 0 {
-                                        matrix_client
-                                            .request(send_message_event::Request::new(
-                                                &room_id,
-                                                &rand::random::<i32>().to_string(),
-                                                &AnyMessageEventContent::RoomMessage(
-                                                    MessageEventContent::text_plain(
-                                                        "Issues not found!",
-                                                    ),
-                                                ),
-                                            ))
-                                            .await
-                                            .unwrap();
+                                        api::matrix::send_plain_message(
+                                            &matrix_client,
+                                            &room_id,
+                                            "Issues not found!",
+                                        )
+                                        .await;
                                     } else {
                                         let msg = issues.as_message(&config.redmine_server);
-                                        matrix_client
-                                            .request(send_message_event::Request::new(
-                                                &room_id,
-                                                &rand::random::<i32>().to_string(),
-                                                &AnyMessageEventContent::RoomMessage(
-                                                    MessageEventContent::text_html(&msg, &msg),
-                                                ),
-                                            ))
-                                            .await
-                                            .unwrap();
+                                        api::matrix::send_html_message(
+                                            &matrix_client,
+                                            &room_id,
+                                            &msg,
+                                            &msg,
+                                        )
+                                        .await;
                                     }
                                 } else {
                                     let msg = format!(
                                         "Failed to fetch issues from redmine!<br>Error:<br><pre><code class=\"language-rust\">{:#?}</code></pre>", &issues.err()
                                     );
-                                    matrix_client
-                                        .request(send_message_event::Request::new(
-                                            &room_id,
-                                            &rand::random::<i32>().to_string(),
-                                            &AnyMessageEventContent::RoomMessage(
-                                                MessageEventContent::text_html(&msg, &msg),
-                                            ),
-                                        ))
-                                        .await
-                                        .unwrap();
+                                    api::matrix::send_html_message(
+                                        &matrix_client,
+                                        &room_id,
+                                        &msg,
+                                        &msg,
+                                    )
+                                    .await;
                                 }
                             } else {
-                                matrix_client
-                                    .request(send_message_event::Request::new(
-                                        &room_id,
-                                        &rand::random::<i32>().to_string(),
-                                        &AnyMessageEventContent::RoomMessage(
-                                            MessageEventContent::text_plain(
-                                                "I don't know this command!",
-                                            ),
-                                        ),
-                                    ))
-                                    .await
-                                    .unwrap();
+                                api::matrix::send_plain_message(
+                                    &matrix_client,
+                                    &room_id,
+                                    "I don't know this command!",
+                                )
+                                .await;
                             }
                         }
                         _ => {}

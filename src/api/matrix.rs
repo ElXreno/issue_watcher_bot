@@ -2,6 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
+use ruma::{
+    api::client::r0::message::send_message_event::{Request, Response},
+    events::{room::message::MessageEventContent, AnyMessageEventContent},
+    RoomId,
+};
 use ruma_client::{Client, Session};
 use std::process::exit;
 
@@ -37,4 +42,34 @@ pub async fn get_client_with_session(
     println!("Matrix: authorization complete!");
 
     (matrix_client, session)
+}
+
+pub async fn send_plain_message(client: &Client, room_id: &RoomId, message: &str) -> Response {
+    client
+        .request(Request::new(
+            room_id,
+            &rand::random::<i32>().to_string(),
+            &AnyMessageEventContent::RoomMessage(MessageEventContent::text_plain(message)),
+        ))
+        .await
+        .unwrap()
+}
+
+pub async fn send_html_message(
+    client: &Client,
+    room_id: &RoomId,
+    plain_message: &str,
+    html_message: &str,
+) -> Response {
+    client
+        .request(Request::new(
+            &room_id,
+            &rand::random::<i32>().to_string(),
+            &AnyMessageEventContent::RoomMessage(MessageEventContent::text_html(
+                plain_message,
+                html_message,
+            )),
+        ))
+        .await
+        .unwrap()
 }
