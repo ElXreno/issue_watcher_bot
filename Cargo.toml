@@ -26,7 +26,7 @@ http = "0.2.3"
 directories = "3.0.1"
 serde = { version = "1.0.123", features = ["derive"] }
 serde_yaml = "0.8.15"
-tokio = { version = "1.1.0", features = ["full"] }
+tokio = { version = "1.8.4", features = ["full"] }
 tokio-stream = "0.1.2"
 ruma = { git = "https://github.com/ruma/ruma", rev = "b087cf7", features = ["client-api", "unstable-pre-spec"] }
 ruma-client = { git = "https://github.com/ruma/ruma", rev = "b087cf7" }
